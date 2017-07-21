@@ -16,6 +16,10 @@ namespace MyGame
 		public bool isFull { get { return health == maxHealth; } }
 		public int touchDemage { get; protected set; }
 		public bool isEraseOnDeath { get; set; }
+		public Vector3 barPosition
+		{
+			set { if (healthBar) healthBar.worldPosition = value; }
+		}
 
 		public virtual void ChangeHealth(int valueToAdd)
 		{
@@ -46,8 +50,8 @@ namespace MyGame
 			base.Awake();
 			isEraseOnDeath = true;
 			isDemagamble = true;
-			playingUpd += UpdateBarPosition;
-			afterPlayingUpd += UpdateBarPosition;
+			playingUpd += delegate() { barPosition = position; };
+			afterPlayingUpd += delegate () { barPosition = position; };
 		}
 
 		protected void OnTriggerEnter(Collider other)
@@ -66,10 +70,6 @@ namespace MyGame
 		private HealthBar m_healthBar;
 		private bool m_isDestroyed = false;
 
-		private void UpdateBarPosition()
-		{
-			if (healthBar) healthBar.worldPosition = position;
-		}
 		private void OnCollideWithBody(Body other)
 		{
 			if (!isDemagamble || m_isDestroyed) return;
@@ -77,6 +77,7 @@ namespace MyGame
 			ChangeHealth(-1 * other.touchDemage);
 			other.OnDemageTaked();
 			DoAfterDemaged();
+			if (healthBar) healthBar.SetValue(health);
 
 			if (!isLive && isEraseOnDeath)
 			{
@@ -85,8 +86,6 @@ namespace MyGame
 				m_isDestroyed = true;
 				return;
 			}
-
-			if (healthBar) healthBar.SetValue(health);
 		}
 	}
 }

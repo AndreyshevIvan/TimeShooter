@@ -16,7 +16,6 @@ namespace MyGame
 			}
 
 			m_data = newData;
-			position.y = GameWorld.FLY_HEIGHT;
 			this.position = position;
 			transform.rotation = necessaryRotation;
 			touchDemage = m_data.demage;

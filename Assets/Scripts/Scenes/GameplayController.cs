@@ -22,34 +22,33 @@ namespace MyGame
 				NotifyObjects();
 			}
 		}
-		public GameWorld world { get { return m_world; } }
+		public World world { get { return m_world; } }
 		public Player player { get; private set; }
-		public float timeScale { get; private set; }
+		public float clearProgress
+		{
+			get { return m_clearProgress; }
+			private set { m_clearProgress = Mathf.Clamp01(value); }
+		}
 
-		public const float ENDING_WAITING_TIME = 3;
+		public const float PLAYER_DEPTH = -6;
 
 		[SerializeField]
-		private GameWorld m_world;
+		private World m_world;
 		[SerializeField]
 		private GameplayUI m_interface;
 		[SerializeField]
 		private ScenesController m_scenesController;
 		[SerializeField]
 		private Factory m_factory;
-		[SerializeField]
-		private Map m_map;
 
+		private Ship m_ship;
 		private ShipProperties m_shipProperties = new ShipProperties();
 		private GameplayState m_state;
 		private GameplayState m_prepauseState;
-		private EventDelegate m_update;
-		private float m_prePauseTimeScale;
+		private float m_clearProgress = 0;
 
-		private Ship ship { get; set; }
-
-		private const float SHIP_PRE_START_SPEED = 4;
-		private const float SHIP_START_SPEED = 11;
-		private const float SHIP_START_Z = -5;
+		private const float CLEAR_DURATION = 10;
+		private const float CLEAR_LEAVE_DURATION = 5;
 
 		private void Awake()
 		{
@@ -61,90 +60,86 @@ namespace MyGame
 			m_world.Init(this);
 			Factory.Create(m_factory, m_world, m_interface);
 
-			InitMap();
 			InitShip();
 			InitWorld();
 			InitInterface();
 
-			player = new Player(m_interface, ship);
+			player = new Player(m_interface, m_ship);
 			StartGame();
-		}
-		private void InitMap()
-		{
-			m_map.Init(this);
+			StopMove();
 		}
 		private void InitShip()
 		{
-			ship = Factory.GetShip(ShipType.STANDART);
-			ship.properties = m_shipProperties;
-			ship.position = new Vector3(0, GameWorld.FLY_HEIGHT, SHIP_START_Z);
+			m_ship = Factory.GetShip(ShipType.STANDART);
+			m_ship.properties = m_shipProperties;
+			m_ship.position = new Vector3(0, 0, PLAYER_DEPTH);
+			m_ship.onDeath += EndGame;
 		}
 		private void InitWorld()
 		{
-			m_world.map = m_map;
-			m_world.ship = ship;
+			m_world.ship = m_ship;
 		}
 		private void InitInterface()
 		{
 			m_interface.Init(this);
 			m_interface.joystickListener = Move;
+			m_interface.joystickCloseEvent = StopMove;
 			m_interface.onPause += Pause;
-		}
-
-		private void FixedUpdate()
-		{
-			if (m_update != null) m_update();
 		}
 
 		private void StartGame()
 		{
 			state = GameplayState.PLAYING;
-		}
-		private void WinGameOver()
-		{
-			Debug.Log("Win!");
-		}
-		private void LoseGameOver()
-		{
-			Debug.Log("Lose!");
+			clearProgress = 0;
 		}
 		private void Pause(bool isPause)
 		{
 			if (isPause)
 			{
-				m_prePauseTimeScale = Time.timeScale;
 				Time.timeScale = 0;
 				m_prepauseState = state;
 				return;
 			}
 
-			Time.timeScale = m_prePauseTimeScale;
+			Time.timeScale = 1;
 			state = m_prepauseState;
+		}
+		private void EndGame()
+		{
+		}
+
+		private void FixedUpdate()
+		{
+			UpdateClearProgress();
+		}
+		private void UpdateClearProgress()
+		{
+			if (state != GameplayState.PLAYING)
+			{
+				return;
+			}
+
+			float current = clearProgress * CLEAR_DURATION + Time.fixedDeltaTime;
+			float leave = 
+			current-= GTime.timeScale * 
+			clearProgress += current / CLEAR_DURATION;
 		}
 
 		private void Move(Vector2 direction)
 		{
 			float sqrSum = Mathf.Pow(direction.x, 2) + Mathf.Pow(direction.y, 2);
 			GTime.timeScale = Mathf.Sqrt(sqrSum);
-
-			ship.MoveBy(direction);
+			m_ship.RotateBy(direction.x);
 		}
-		private void MoveShipToStart()
+		private void StopMove()
 		{
-			Vector3 target = new Vector3(0, GameWorld.FLY_HEIGHT, SHIP_START_Z);
-			float movement = SHIP_START_SPEED * Time.fixedDeltaTime;
-			ship.position = Vector3.MoveTowards(ship.position, target, movement);
-			if (ship.position == target)
-			{
-				StartGame();
-				m_update -= MoveShipToStart;
-			}
+			GTime.timeScale = 0;
+			m_ship.StopRotate();
 		}
 		private void NotifyObjects()
 		{
 			m_world.GameplayChange(state);
 			m_interface.GameplayChange(state);
-			m_map.GameplayChange(state);
 		}
 	}
 
@@ -153,7 +148,7 @@ namespace MyGame
 		public static float timeScale
 		{
 			get { return m_timeScale; }
-			set { m_timeScale = Mathf.Clamp(value, 0, 1); }
+			set { m_timeScale = Mathf.Clamp01(value); }
 		}
 		public static float timeStep
 		{
@@ -177,7 +172,8 @@ namespace MyGame
 	public interface IGameplay
 	{
 		GameplayState state { get; }
-		GameWorld world { get; }
+		World world { get; }
 		Player player { get; }
+		float clearProgress { get; }
 	}
 }

@@ -28,7 +28,6 @@ namespace MyGame.Enemies
 			if (healthBar) healthBar.SetValue(health);
 			if (roadController) roadController.OnEndReached.AddListener(T =>
 			{
-				if (gameplay.state != GameplayState.AFTER_MATCH) world.player.LossEnemy();
 				Exit();
 			});
 

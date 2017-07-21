@@ -39,8 +39,7 @@ namespace MyGame
 		}
 		protected sealed override void PlayingUpdate()
 		{
-			if (isMagnetic) world.MoveToShip(this);
-			//CorrectPositionOnField(CorrectType.X_ONLY);
+			if (isMagnetic) MoveToShip(true);
 			transform.Rotate(m_rotation * GTime.timeStep);
 		}
 
@@ -59,7 +58,6 @@ namespace MyGame
 		private void SetExplosionForce()
 		{
 			Vector3 randPosition = Utils.RandomVect(-DELTA_POSITION, DELTA_POSITION);
-			randPosition.y = GameWorld.FLY_HEIGHT;
 			position = randPosition;
 		}
 		private void SetRandomRotation()

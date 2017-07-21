@@ -59,15 +59,6 @@ namespace MyGame
 			m_killings.Add(type, killsCount + 1);
 		}
 
-		public void BeDemaged()
-		{
-			SetTrigger(ref m_isDemaged, onDemaged);
-		}
-		public void LossEnemy()
-		{
-			SetTrigger(ref m_isLossEnemy, onLossEnemy);
-		}
-
 		private int m_points;
 		private int m_stars;
 		private bool m_isDemaged = false;

@@ -21,11 +21,6 @@ namespace MyGame.Hero
 
 		public float magnetFactor { get { return 1; } }
 		public float magnetDistance { get { return 5; } }
-		public float modsPart { get { return (float)modsCount / MODIFICATION_COUNT; } }
-		public int modsCount { get; protected set; }
-		public bool isShieldActive { get; private set; }
-
-		public const int MODIFICATION_COUNT = 12;
 
 		protected override void OnInitEnd()
 		{
@@ -70,6 +65,7 @@ namespace MyGame.Hero
 		}
 		private void ShootByBaseGun()
 		{
+			/*
 			if (!isGunReady)
 			{
 				return;
@@ -79,6 +75,7 @@ namespace MyGame.Hero
 			AmmoType type = AmmoType.PLAYER_BULLET;
 			Bullet bullet = CreateBullet(type, m_properties.gunData, m_gunSpawn);
 			m_gunTimer = 0;
+			*/
 		}
 	}
 }

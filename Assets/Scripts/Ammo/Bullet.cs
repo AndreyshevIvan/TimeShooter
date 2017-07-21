@@ -14,7 +14,6 @@ namespace MyGame
 		{
 			this.data = data;
 			touchDemage = data.demage;
-			position.y = GameWorld.FLY_HEIGHT;
 			this.position = position;
 			data.direction.y = 0;
 			direction = Vector3.Normalize(data.direction);

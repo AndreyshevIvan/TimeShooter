@@ -17,29 +17,25 @@ namespace MyGame
 		, IDragHandler
 	{
 		public Transform barsParent { get { return m_barsParent; } }
-		public EventDelegate startTouchEvents { get; set; }
 		public TouchDelegate joystickListener { get; set; }
+		public EventDelegate joystickCloseEvent { get; set; }
 		public BoolEventDelegate onPause { get; set; }
 		public int points { set { m_points.SetValue(value); } }
-
-		public const float ENDING_FADE_DURATION = 0.4f;
-		public const float SLOWMO_OPEN_DUR = 0.3f;
 
 		public void OnPointerDown(PointerEventData eventData)
 		{
 			m_joystick.Open(eventData);
+			if (joystickListener != null) joystickListener(m_joystick.direction);
 		}
 		public void OnDrag(PointerEventData eventData)
 		{
 			m_joystick.MoveTouch(eventData);
+			if (joystickListener != null) joystickListener(m_joystick.direction);
 		}
 		public void OnPointerUp(PointerEventData eventData)
 		{
 			m_joystick.Close();
-		}
-		public void StartGame()
-		{
-			if (startTouchEvents != null) startTouchEvents();
+			if (joystickCloseEvent != null) joystickCloseEvent();
 		}
 		public void Pause(bool isPause)
 		{
@@ -73,7 +69,6 @@ namespace MyGame
 
 		protected override void PlayingUpdate()
 		{
-			if (joystickListener != null) joystickListener(m_joystick.input);
 			UpdateCameraPosition();
 		}
 		protected override void AfterMatchUpdate()

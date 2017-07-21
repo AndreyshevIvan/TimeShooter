@@ -10,6 +10,7 @@ using FluffyUnderware.Curvy;
 
 namespace MyGame
 {
+	using Hero;
 	using System.Collections;
 	using BonusCount = Pair<BonusType, int>;
 
@@ -17,8 +18,8 @@ namespace MyGame
 	{
 		public Vector3 position
 		{
-			get { return transform.position; }
-			set { transform.position = value; }
+			get { return m_transform.position; }
+			set { m_transform.position = value; }
 		}
 		public ParticleSystem explosion { get { return m_explosion; } }
 
@@ -37,11 +38,11 @@ namespace MyGame
 		}
 		public void MoveToGround()
 		{
-			transform.SetParent(world.map.groundObjects);
+			//transform.SetParent(world.map.groundObjects);
 		}
 		public void MoveToSky()
 		{
-			transform.SetParent(world.map.skyObjects);
+			//transform.SetParent(world.map.skyObjects);
 		}
 		public void ExitFromWorld()
 		{
@@ -69,6 +70,7 @@ namespace MyGame
 			particles = Utils.GetAllComponents<ParticleSystem>(this);
 			bonuses = new List<BonusCount>();
 			toDestroy = new List<GameObject>();
+			m_transform = transform;
 
 			exitAllowed = true;
 			openAllowed = false;
@@ -80,7 +82,7 @@ namespace MyGame
 
 		protected sealed override void OnInitGameplayComplete()
 		{
-			GameWorld newWorld = gameplay as GameWorld;
+			World newWorld = gameplay as World;
 			if (newWorld == null || newWorld.Equals(world))
 			{
 				return;
@@ -98,7 +100,21 @@ namespace MyGame
 		{
 			roadController.Speed = m_roadSpeed * GTime.timeScale;
 		}
+		protected void MoveToShip(bool useShipMagnetic)
+		{
+			Ship ship = world.ship;
 
+			float distance = Vector3.Distance(position, ship.position);
+			if (distance > ship.mind.magnetDistance)
+			{
+				return;
+			}
+
+			float factor = (useShipMagnetic) ? ship.mind.magnetFactor : 1;
+			float distanceFactor = ship.mind.magnetDistance / distance;
+			float movement = factor * distanceFactor * MAGNETIC_SPEED * GTime.timeStep;
+			position = Vector3.MoveTowards(position, ship.position, movement);
+		}
 		protected void Exit()
 		{
 			openAllowed = false;
@@ -117,8 +133,11 @@ namespace MyGame
 
 		[SerializeField]
 		private ParticleSystem m_explosion;
+		private Transform m_transform;
 		private bool m_isStartExit = false;
 		private bool m_isInit = false;
+
+		private const float MAGNETIC_SPEED = 2;
 
 		private IEnumerator SetSpline(CurvySpline spline, float position)
 		{
