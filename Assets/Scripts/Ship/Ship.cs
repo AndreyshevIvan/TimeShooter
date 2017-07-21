@@ -26,10 +26,6 @@ namespace MyGame.Hero
 			float zAngle = zRotationDirection * MAX_ROTATE_ANGLE;
 			m_targetRotation = Quaternion.Euler(0, SHIP_ANGLE_Y, zAngle);
 		}
-		public void StopRotate()
-		{
-			m_targetRotation = physicsBody.rotation;
-		}
 
 		protected override void OnAwakeEnd()
 		{

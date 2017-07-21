@@ -8,6 +8,7 @@ using GameFactory;
 using FluffyUnderware.Curvy;
 using FluffyUnderware.Curvy.Controllers;
 using GameUtils;
+using UnityEngine.UI;
 
 namespace MyGame
 {
@@ -45,10 +46,22 @@ namespace MyGame
 		private ShipProperties m_shipProperties = new ShipProperties();
 		private GameplayState m_state;
 		private GameplayState m_prepauseState;
+		private Vector2 m_direction;
 		private float m_clearProgress = 0;
 
+		private Vector2 direction
+		{
+			get { return m_direction; }
+			set
+			{
+				m_direction = value;
+				float sqrSum = Mathf.Pow(value.x, 2) + Mathf.Pow(value.y, 2);
+				GTime.timeScale = Mathf.Sqrt(sqrSum);
+			}
+		}
+
 		private const float CLEAR_DURATION = 10;
-		private const float CLEAR_LEAVE_DURATION = 5;
+		private const float LEAVE_DURATION = 4;
 
 		private void Awake()
 		{
@@ -82,8 +95,8 @@ namespace MyGame
 		private void InitInterface()
 		{
 			m_interface.Init(this);
-			m_interface.joystickListener = Move;
-			m_interface.joystickCloseEvent = StopMove;
+			m_interface.joystick.joystickListener = UpdateMove;
+			m_interface.joystick.joystickCloseEvent = StopMove;
 			m_interface.onPause += Pause;
 		}
 
@@ -106,6 +119,7 @@ namespace MyGame
 		}
 		private void EndGame()
 		{
+			state = GameplayState.END;
 		}
 
 		private void FixedUpdate()
@@ -119,22 +133,20 @@ namespace MyGame
 				return;
 			}
 
-			float current = clearProgress * CLEAR_DURATION + Time.fixedDeltaTime;
-			float leave = 
-			current-= GTime.timeScale * 
-			clearProgress += current / CLEAR_DURATION;
+			float duration = clearProgress * CLEAR_DURATION + Time.fixedDeltaTime;
+			duration += -direction.y * Time.fixedDeltaTime * LEAVE_DURATION;
+			clearProgress = duration / CLEAR_DURATION;
+			if (clearProgress >= 1) EndGame();
 		}
 
-		private void Move(Vector2 direction)
+		private void UpdateMove(Vector2 direction)
 		{
-			float sqrSum = Mathf.Pow(direction.x, 2) + Mathf.Pow(direction.y, 2);
-			GTime.timeScale = Mathf.Sqrt(sqrSum);
+			this.direction = direction;
 			m_ship.RotateBy(direction.x);
 		}
 		private void StopMove()
 		{
-			GTime.timeScale = 0;
-			m_ship.StopRotate();
+			direction = Vector2.zero;
 		}
 		private void NotifyObjects()
 		{

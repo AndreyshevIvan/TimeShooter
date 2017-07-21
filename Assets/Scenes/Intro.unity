@@ -365,7 +365,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: helper
+  m_Text: tap to continue
 --- !u!1 &866672093
 GameObject:
   m_ObjectHideFlags: 0
@@ -786,8 +786,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ea8c2084a2321840bede3ac6bd4f53e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_helper: {fileID: 593679379}
-  m_gameName: {fileID: 1716032779}
 --- !u!4 &1996640717
 Transform:
   m_ObjectHideFlags: 0

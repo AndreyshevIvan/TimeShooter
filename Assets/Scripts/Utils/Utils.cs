@@ -114,10 +114,10 @@ namespace GameUtils
 			time = (time < 0) ? 0 : time;
 			instance.StartCoroutine(AfterTimeEvent(time, afterTimeEvent));
 		}
-		public static void FadeElement(Transform obj, float alpha, float duration)
+		public static void FadeElement(Component component, float alpha, float duration)
 		{
-			List<Graphic> graphic = Utils.GetAllComponents<Graphic>(obj);
-			graphic.ForEach(element => element.CrossFadeAlpha(alpha, duration, true));
+			List<Graphic> graphic = GetAllComponents<Graphic>(component);
+			graphic.ForEach(element => element.CrossFadeAlpha(alpha, duration, false));
 		}
 		public static bool IsHappen(float probability)
 		{

@@ -27,7 +27,7 @@ namespace MyGame
 
 			switch (newState)
 			{
-				case (GameplayState.BEFORE_START):
+				case (GameplayState.BEFORE_PLAYING):
 					OnPreStart();
 					m_currentEvent = BeforePlayingUpdate;
 					m_currentEvent += beforePlayingUpd;
@@ -45,7 +45,7 @@ namespace MyGame
 					m_currentEvent += playingUpd;
 					break;
 
-				case (GameplayState.AFTER_MATCH):
+				case (GameplayState.END):
 					OnEndGameplay();
 					m_currentEvent = AfterMatchUpdate;
 					m_currentEvent += afterPlayingUpd;
