@@ -552,3 +552,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_explosion: {fileID: 198403414197330982, guid: 31f5ea3881ce72c4fa780beedb78a90d,
     type: 2}
+  m_health: 1

@@ -51,7 +51,7 @@ namespace MyGame
 		}
 		private Vector3 movement
 		{
-			get { return transform.forward * m_data.speed * Time.fixedDeltaTime; }
+			get { return transform.forward * m_data.speed * GTime.timeStep; }
 		}
 		private Quaternion necessaryRotation
 		{
@@ -68,7 +68,7 @@ namespace MyGame
 		}
 		private float stepRotation
 		{
-			get { return m_data.rotationSpeed * Time.fixedDeltaTime; }
+			get { return m_data.rotationSpeed * GTime.timeStep; }
 		}
 		private float angleToTarget
 		{
@@ -77,7 +77,6 @@ namespace MyGame
 
 		private void ClearAndExit()
 		{
-			m_tail.transform.SetParent(world.ground);
 			ParticleSystem.MainModule module = m_tail.main;
 			module.loop = false;
 			Exit();

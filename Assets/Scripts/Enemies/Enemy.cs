@@ -31,6 +31,8 @@ namespace MyGame.Enemies
 				if (gameplay.state != GameplayState.AFTER_MATCH) world.player.LossEnemy();
 				Exit();
 			});
+
+			playingUpd += Shooting;
 		}
 		protected abstract void InitProperties();
 
@@ -74,7 +76,7 @@ namespace MyGame.Enemies
 
 		private void Shooting()
 		{
-			if (isTimerWork && Utils.UpdateTimer(ref m_timer, coldown))
+			if (isTimerWork && Utils.UpdateTimer(ref m_timer, coldown, true))
 			{
 				Shoot();
 				m_timer = 0;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using GameFactory;
 
 namespace MyGame.Enemies
 {
@@ -13,7 +14,7 @@ namespace MyGame.Enemies
 			health = maxHealth = 5;
 			coldown = 2.4f;
 			points = 120;
-			healthBar = world.factory.GetEnemyHealthBar();
+			healthBar = Factory.GetEnemyHealthBar();
 			bonuses.Add(Pair<BonusType, int>.Create(BonusType.STAR, 3));
 			isTimerWork = true;
 
@@ -22,15 +23,14 @@ namespace MyGame.Enemies
 		}
 		protected override void Shoot()
 		{
-			if (!inGameBox)
-			{
-				return;
-			}
-
-			Bullet bullet = factory.GetAmmo(AmmoType.TARGET_TURRET) as Bullet;
+			Bullet bullet = Factory.GetAmmo(AmmoType.TARGET_TURRET) as Bullet;
 			Vector3 direction = Vector3.Normalize(world.ship.position - spawnPos);
 			m_bulletData.direction = direction;
 			bullet.Shoot(m_bulletData, spawnPos);
+		}
+		protected override void PlayingUpdate()
+		{
+			RotateGun();
 		}
 
 		[SerializeField]
@@ -43,11 +43,6 @@ namespace MyGame.Enemies
 
 		private void RotateGun()
 		{
-			if (!inGameBox)
-			{
-				return;
-			}
-
 			Vector3 direction = world.ship.position - position;
 			Quaternion rotation = Quaternion.LookRotation(direction);
 			m_gun.rotation = Quaternion.Lerp(m_gun.rotation, rotation, 1);

@@ -8,26 +8,26 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Intro.unity
     guid: 6bedb56903127bd48a5c8cf26c91e679
-  - enabled: 1
-    path: Assets/Scenes/Rating.unity
+  - enabled: 0
+    path: 
     guid: 7e8c79fb8d2448a44b0eacde21e59370
-  - enabled: 1
-    path: Assets/Scenes/Achievements.unity
+  - enabled: 0
+    path: 
     guid: fd00f6db451351444a42c6b646a2cc44
-  - enabled: 1
-    path: Assets/Scenes/Shop.unity
+  - enabled: 0
+    path: 
     guid: 5c71557947a516b43867eef307985941
-  - enabled: 1
-    path: Assets/Scenes/Main.unity
+  - enabled: 0
+    path: 
     guid: 3eb7e9468c365ad469c9f7577ab70b26
-  - enabled: 1
-    path: Assets/Scenes/MyShips.unity
+  - enabled: 0
+    path: 
     guid: 939d3d6409f77374fb3207e6d0dcaa04
-  - enabled: 1
-    path: Assets/Scenes/Profile.unity
+  - enabled: 0
+    path: 
     guid: 74bdf29664e2b2543a82a6677b9ff018
-  - enabled: 1
-    path: Assets/Scenes/ShipModification.unity
+  - enabled: 0
+    path: 
     guid: 5390005cb7975674e8ae07e1ccf77357
   - enabled: 1
     path: Assets/Scenes/DemoScene.unity

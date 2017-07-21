@@ -11,10 +11,8 @@ using GameUtils;
 
 namespace MyGame
 {
-	public class GameWorld : GameplayObject, IGameWorld, IGameplay
+	public class GameWorld : GameplayObject, IGameWorld
 	{
-		public IFactory factory { get; set; }
-		public Map map { get; set; }
 		public Ship ship
 		{
 			get { return m_ship; }
@@ -25,18 +23,12 @@ namespace MyGame
 				Add(m_ship.mind);
 			}
 		}
-		public GameplayState state { get { return gameplay.state; } }
-		public GameWorld world { get { return this; } }
+		public Map map { get; set; }
 		public WorldContainer container { get; private set; }
 
+		public GameplayState state { get { return gameplay.state; } }
+		public GameWorld world { get { return this; } }
 		public Player player { get { return gameplay.player; } }
-
-		public Transform sky { get { return map.skyObjects; } }
-		public Transform ground { get { return map.groundObjects; } }
-		public BoundingBox box { get; private set; }
-		public float visiblePosition { get; private set; }
-		public float time { get { return map.time; } }
-		public bool isAllEnemiesKilled { get { return container.isEnemiesEmpty; } }
 
 		public const float FLY_HEIGHT = 4;
 		public const float SPAWN_OFFSET = 1.2f;
@@ -52,22 +44,14 @@ namespace MyGame
 		}
 		public void Remove<T>(T obj) where T : WorldObject
 		{
+			if (!obj) return;
+
 			container.Remove(obj);
 			if (obj.openAllowed) OpenObject(obj);
 			if (obj.distmantleAllowed) Dismantle(obj);
 			Destroy(obj.gameObject);
 		}
 
-		public void SetSlowMode(bool isModeOn)
-		{
-			m_targetTimeScale = (isModeOn) ? SLOW_TIMESCALE : 1;
-
-			if (isModeOn != m_lastModeType)
-			{
-				m_deltaScale = Mathf.Abs(m_targetTimeScale - Time.timeScale);
-				m_lastModeType = isModeOn;
-			}
-		}
 		public void MoveToShip(WorldObject body, bool useShipMagnetic = true)
 		{
 			float distance = Vector3.Distance(body.position, ship.position);
@@ -78,22 +62,11 @@ namespace MyGame
 
 			float factor = (useShipMagnetic) ? ship.mind.magnetFactor : 1;
 			float distanceFactor = ship.mind.magnetDistance / distance;
-			float movement = factor * distanceFactor * MAGNETIC_SPEED * Time.fixedDeltaTime;
+			float movement = factor * distanceFactor * MAGNETIC_SPEED * GTime.timeStep;
 			body.position = Vector3.MoveTowards(body.position, ship.position, movement);
 		}
 		public void KillPlayer()
 		{
-			if (!ship)
-			{
-				return;
-			}
-
-			Vector3 deathPos = ship.position;
-			List<Pair<BonusType, int>> playerStars = new List<Pair<BonusType, int>>();
-			int stars = player.stars > DEATH_STARS_COUNT ? DEATH_STARS_COUNT : player.stars;
-			playerStars.Add(Pair<BonusType, int>.Create(BonusType.STAR, stars));
-			Remove(ship);
-			OpenBonuses(playerStars, deathPos);
 		}
 		public void CreateExplosion(ParticleSystem explosion, Vector3 position)
 		{
@@ -135,23 +108,8 @@ namespace MyGame
 
 		private void Awake()
 		{
-			box = GameData.box;
 			container = new WorldContainer(this);
 			m_camera = Camera.main;
-		}
-
-		private void Start()
-		{
-			InitTempPlayer();
-			InitVisibleArea();
-		}
-		private void InitTempPlayer()
-		{
-			player.onDemaged = () => { Debug.Log("Demaged"); };
-			player.onLossEnemy = () => { Debug.Log("LOSS"); };
-		}
-		private void InitVisibleArea()
-		{
 		}
 
 		private void OnTriggerExit(Collider other)
@@ -188,9 +146,8 @@ namespace MyGame
 			{
 				Utils.DoAnyTimes(bonus.value, () =>
 				{
-					Bonus newBonus = factory.GetBonus(bonus.key);
+					Bonus newBonus = Factory.GetBonus(bonus.key);
 					newBonus.position = spawn;
-					newBonus.explosionStart = true;
 				});
 			});
 		}
@@ -202,36 +159,13 @@ namespace MyGame
 			}
 
 			CreateExplosion(dismantleObject.explosion, dismantleObject.position);
-
-			if (!m_isDismantle)
-			{
-				return;
-			}
-
-			List<Rigidbody> bodies = Utils.GetChilds<Rigidbody>(dismantleObject);
-			bodies.ForEach(body =>
-			{
-				body.transform.SetParent(ground);
-				body.useGravity = true;
-				body.isKinematic = false;
-				body.gameObject.layer = GARBAGE_LAYER;
-				body.AddForce(Utils.RandomVect(-DISMANTLE_FORCE, DISMANTLE_FORCE));
-				List<MeshRenderer> materials = Utils.GetAllComponents<MeshRenderer>(body.transform);
-				materials.ForEach(element => element.material = m_garbageMaterial);
-			});
 		}
 	}
 
-	public interface IGameWorld
+	public interface IGameWorld : IGameplay
 	{
 		Ship ship { get; }
-		IFactory factory { get; }
-		Player player { get; }
-		Transform sky { get; }
-		Transform ground { get; }
-		BoundingBox box { get; }
-		float visiblePosition { get; }
-		float time { get; }
+		Map map { get; }
 
 		void Add<T>(T obj) where T : WorldObject;
 		void Remove<T>(T obj) where T : WorldObject;

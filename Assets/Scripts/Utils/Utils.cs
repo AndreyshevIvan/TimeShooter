@@ -33,7 +33,7 @@ namespace GameUtils
 			uint mod = value % 1000;
 			return kCount.ToString() + '.' + mod.ToString()[0] + " k";
 		}
-		public static bool UpdateTimer(ref float timer, float coldown)
+		public static bool UpdateTimer(ref float timer, float coldown, bool isGTime = false)
 		{
 			bool isReady = timer >= coldown;
 			if (isReady)
@@ -41,7 +41,7 @@ namespace GameUtils
 				return true;
 			}
 
-			timer += Time.fixedDeltaTime;
+			timer += (isGTime) ? GTime.timeStep : Time.fixedDeltaTime;
 			return false;
 		}
 		public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>

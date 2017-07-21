@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using GameFactory;
 
 namespace MyGame.Enemies
 {
@@ -13,10 +14,10 @@ namespace MyGame.Enemies
 			health = maxHealth = 3;
 			touchDemage = 65;
 			points = 100;
-			healthBar = world.factory.GetEnemyHealthBar();
+			healthBar = Factory.GetEnemyHealthBar();
 			bonuses.Add(Pair<BonusType, int>.Create(BonusType.STAR, 5));
 
-			isTimerWork = true;
+			isTimerWork = false;
 			coldown = 2.6f;
 
 			m_rocketData.target = world.ship.transform;
@@ -29,8 +30,12 @@ namespace MyGame.Enemies
 		}
 		protected override void Shoot()
 		{
-			Rocket rocket = factory.GetAmmo(AmmoType.COPTER_ROCKET) as Rocket;
+			Rocket rocket = Factory.GetAmmo(AmmoType.COPTER_ROCKET) as Rocket;
 			rocket.SetTarget(m_rocketData, position);
+		}
+		protected override void PlayingUpdate()
+		{
+			UpdateRoadSpeed();
 		}
 
 		private RocketData m_rocketData = new RocketData();

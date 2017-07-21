@@ -20,42 +20,47 @@ namespace MyGame
 			get { return transform.position; }
 			set { transform.position = value; }
 		}
-		public SplineController roadController { get; protected set; }
 		public ParticleSystem explosion { get { return m_explosion; } }
 
 		public bool exitAllowed { get; protected set; }
 		public bool openAllowed { get; protected set; }
 		public bool distmantleAllowed { get; protected set; }
-		public bool inGameBox { get { return m_box.Contain(position); } }
 
 		public bool isWorldInit { get { return m_isInit; } }
 		public int points { get; protected set; }
 		public List<Pair<BonusType, int>> bonuses { get; protected set; }
 
-		public void AddToRoad(CurvySpline road, float position)
+		public void AddToRoad(CurvySpline road, float position, float speed)
 		{
+			m_roadSpeed = speed;
 			StartCoroutine(SetSpline(road, position));
 		}
 		public void MoveToGround()
 		{
-			transform.SetParent(world.ground);
+			transform.SetParent(world.map.groundObjects);
 		}
 		public void MoveToSky()
 		{
-			transform.SetParent(world.sky);
+			transform.SetParent(world.map.skyObjects);
 		}
 		public void ExitFromWorld()
 		{
 			OnExitFromWorld();
 		}
 
-		protected BoundingBox m_box;
+		protected float m_roadSpeed = 0;
 
 		protected IGameWorld world { get; private set; }
-		protected IFactory factory { get { return world.factory; } }
 		protected Rigidbody physicsBody { get; private set; }
+		protected SplineController roadController { get; set; }
 		protected List<ParticleSystem> particles { get; private set; }
 		protected List<GameObject> toDestroy { get; private set; }
+		protected enum CorrectType
+		{
+			X_ONLY,
+			Z_ONLY,
+			X_Z,
+		}
 
 		protected void Awake()
 		{
@@ -82,20 +87,16 @@ namespace MyGame
 			}
 
 			world = newWorld;
-			m_box = world.box;
 			OnInitEnd();
 			m_isInit = true;
 		}
 		protected virtual void OnInitEnd() { }
 
 		protected virtual void OnExitFromWorld() { }
-		protected void UpdatePositionOnField()
+
+		protected void UpdateRoadSpeed()
 		{
-			position = new Vector3(
-				Mathf.Clamp(position.x, m_box.xMin, m_box.xMax),
-				GameWorld.FLY_HEIGHT,
-				position.z//Mathf.Clamp(position.z, m_box.zMin, m_box.zMax)
-			);
+			roadController.Speed = m_roadSpeed * GTime.timeScale;
 		}
 
 		protected void Exit()

@@ -10,24 +10,36 @@ using GameUtils;
 
 namespace MyGame
 {
-	public partial class GameplayUI : GameplayObject
+	public partial class GameplayUI
+		: GameplayObject
+		, IPointerDownHandler
+		, IPointerUpHandler
+		, IDragHandler
 	{
-		public PointDelegate moveShip;
-		public BoolEventDelegate onChangeMode;
-		public BoolEventDelegate onPause;
-		public EventDelegate startTouchEvents;
-		public EventDelegate onRestart;
-
+		public Transform barsParent { get { return m_barsParent; } }
+		public EventDelegate startTouchEvents { get; set; }
+		public TouchDelegate joystickListener { get; set; }
+		public BoolEventDelegate onPause { get; set; }
 		public int points { set { m_points.SetValue(value); } }
-		public int modifications { set { m_modsBar.SetValue(value); } }
 
 		public const float ENDING_FADE_DURATION = 0.4f;
 		public const float SLOWMO_OPEN_DUR = 0.3f;
 
+		public void OnPointerDown(PointerEventData eventData)
+		{
+			m_joystick.Open(eventData);
+		}
+		public void OnDrag(PointerEventData eventData)
+		{
+			m_joystick.MoveTouch(eventData);
+		}
+		public void OnPointerUp(PointerEventData eventData)
+		{
+			m_joystick.Close();
+		}
 		public void StartGame()
 		{
 			if (startTouchEvents != null) startTouchEvents();
-			SetActive(m_shipArea, false);
 		}
 		public void Pause(bool isPause)
 		{
@@ -40,17 +52,15 @@ namespace MyGame
 			CloseInterface();
 
 			m_points.Fade(0, 0);
-			m_modsBar.Fade(0, 0);
 		}
 		protected override void OnPlaying()
 		{
 			CloseInterface();
 			SetActive(m_pauseButton, true);
 			SetActive(m_points, true);
-			SetActive(m_modsBar, true);
+			SetActive(m_joystick, true);
 
 			m_points.Fade(1, BARS_FADING_DURATION);
-			m_modsBar.Fade(1, BARS_FADING_DURATION);
 		}
 		protected override void OnEndGameplay()
 		{
@@ -59,7 +69,16 @@ namespace MyGame
 
 			Utils.FadeElement(m_results.transform, 0, 0);
 			m_points.Fade(0, BARS_FADING_DURATION);
-			m_modsBar.Fade(0, BARS_FADING_DURATION);
+		}
+
+		protected override void PlayingUpdate()
+		{
+			if (joystickListener != null) joystickListener(m_joystick.input);
+			UpdateCameraPosition();
+		}
+		protected override void AfterMatchUpdate()
+		{
+			UpdateCameraPosition();
 		}
 
 		[SerializeField]
@@ -67,29 +86,21 @@ namespace MyGame
 		[SerializeField]
 		private PointsBar m_points;
 		[SerializeField]
-		private ModificationBar m_modsBar;
-		[SerializeField]
 		private RectTransform m_pauseButton;
 		[SerializeField]
 		private Component m_pauseInterface;
 		[SerializeField]
-		private Button m_shipArea;
+		private VirtualJoyStick m_joystick;
 		private Camera m_camera;
 
-		private IGameplay gameplay { get; set; }
-		private BoundingBox box { get; set; }
-		private Vector3 shipScreenPosition
-		{
-			get { return m_camera.WorldToScreenPoint(player.shipPosition); }
-		}
-
 		private const float TOUCH_OFFSET_Y = 0.04f;
-		private const float CAMERA_MAX_OFFSET = 2;
+		private const float CAMERA_MAX_OFFSET = 4;
 		private const float CAMERA_SPEED = 7;
 		private const float CAMERA_ANGLE_FACTOR = 0.076f;
-		private const float PAUSE_BUTTON_SIZE_FACTOR = 0.08f;
+		private const float PAUSE_BUTTON_SIZE_FACTOR = 0.07f;
 		private const float SHIP_AREA_SIZE_FACTOR = 0.35f;
 		private const float AREA_POS_FACTOR = 0.02f;
+		private const float JOYSTICK_SIZE_FACTOR = 0.4f;
 
 		private const float MAX_CURTAIN_TRANSPARENCY = 0.5f;
 		private const float BARS_FADING_DURATION = 1.2f;
@@ -103,42 +114,29 @@ namespace MyGame
 		{
 			m_camera = Camera.main;
 			Input.multiTouchEnabled = false;
-			box = GameData.box;
 
 			InitUIElements();
-			InitBehaviours();
 		}
 		private void InitUIElements()
 		{
 			Utils.SetSize(m_pauseButton, Utils.FromSreen(PAUSE_BUTTON_SIZE_FACTOR));
 
-			float areaSize = Utils.FromSreen(SHIP_AREA_SIZE_FACTOR);
-			Utils.SetSize(m_shipArea.GetComponent<RectTransform>(), areaSize);
-		}
-		private void InitBehaviours()
-		{
-			playingBehaviour += ControllShip;
-		}
-
-		private void ControllShip()
-		{
-			Vector3 screenPosition = Input.mousePosition;
-			screenPosition.y += TOUCH_OFFSET_Y * Screen.height;
-			screenPosition.z = m_camera.transform.position.y;
-			screenPosition = m_camera.ScreenToWorldPoint(screenPosition);
-			screenPosition.x += screenPosition.x * -CAMERA_ANGLE_FACTOR;
-			screenPosition.z += screenPosition.z * -CAMERA_ANGLE_FACTOR;
-			if (moveShip != null) moveShip(screenPosition);
-			UpdateCameraPosition();
+			//float areaSize = Utils.FromSreen(SHIP_AREA_SIZE_FACTOR);
+			//Utils.SetSize(m_shipArea.GetComponent<RectTransform>(), areaSize);
 		}
 		private void UpdateCameraPosition()
 		{
+			Vector3 position = m_camera.transform.position;
+			position.x = player.shipPosition.x;
+			m_camera.transform.position = position;
+			/*
 			float playerXPart = player.shipPosition.x / box.xMax;
 			float camMove = playerXPart * playerXPart * CAMERA_MAX_OFFSET;
 			camMove = (player.shipPosition.x < 0) ? -camMove : camMove;
 			Vector3 newCameraPos = m_camera.transform.position;
 			newCameraPos.x = Mathf.MoveTowards(newCameraPos.x, camMove, CAMERA_SPEED * Time.fixedDeltaTime);
 			m_camera.transform.position = newCameraPos;
+			*/
 		}
 		private void CloseInterface()
 		{
@@ -146,18 +144,12 @@ namespace MyGame
 			SetActive(m_pauseButton, false);
 			SetActive(m_pauseInterface, false);
 			SetActive(m_points, false);
-			SetActive(m_modsBar, false);
+			SetActive(m_joystick, false);
 		}
 		private void SetActive(Component element, bool isOpen)
 		{
 			element.gameObject.SetActive(isOpen);
 		}
-
-		private EventDelegate currentBehaviour;
-		private EventDelegate prePlayingBehaviour;
-		private EventDelegate playingBehaviour;
-		private EventDelegate pauseBehaviour;
-		private EventDelegate winBehaviour;
 	}
 
 	public partial class GameplayUI
@@ -185,17 +177,7 @@ namespace MyGame
 		}
 		private void InitResultsInterface()
 		{
-			InitStrings();
-			InitAchievements();
-
 			Utils.FadeElement(m_results.transform, 1, RESULTS_FADE_TIME);
-		}
-		private void InitStrings()
-		{
-			int fontSize = Utils.FromSreen(ACHIEVEMENTS_SIZE_FACTOR);
-		}
-		private void InitAchievements()
-		{
 		}
 	}
 
@@ -209,7 +191,6 @@ namespace MyGame
 		private const float BULLET_TAIL_FIRST_KEY_TIME = 0.25f;
 	}
 
-	public delegate void PointDelegate(Vector3 point);
 	public delegate void BoolEventDelegate(bool isTrue);
 	public delegate void EventDelegate();
 }

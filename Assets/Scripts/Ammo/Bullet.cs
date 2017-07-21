@@ -38,7 +38,7 @@ namespace MyGame
 
 		private void Move()
 		{
-			position += direction * Time.fixedDeltaTime * data.speed;
+			position += direction * data.speed * GTime.timeStep;
 		} 
 	}
 

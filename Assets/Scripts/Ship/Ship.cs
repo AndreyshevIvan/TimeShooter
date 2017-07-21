@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GameFactory;
 using GameUtils;
 
 namespace MyGame.Hero
@@ -22,12 +23,12 @@ namespace MyGame.Hero
 
 		public const float ENDING_CONTROLL_DURATION = 2;
 
-		public void MoveTo(Vector3 newPosition)
+		public void MoveBy(Vector2 direction)
 		{
-			Vector3 direction = (newPosition - position).normalized;
+			direction.y = 0;
 			m_smoothDir = Vector3.MoveTowards(m_smoothDir, direction, CONTROLL_SMOOTHING);
 			direction = m_smoothDir;
-			Vector3 movement = new Vector3(direction.x, 0, direction.z);
+			Vector3 movement = new Vector3(direction.x, 0, direction.y);
 			velocity = movement * CONTROLL_SPEED;
 			m_isMoved = true;
 		}
@@ -42,7 +43,7 @@ namespace MyGame.Hero
 		}
 		protected override void OnInitEnd()
 		{
-			healthBar = world.factory.GetPlayerHealthBar();
+			healthBar = Factory.GetPlayerHealthBar();
 			healthBar.SetValue(health);
 			touchDemage = int.MaxValue;
 			isEraseOnDeath = false;
@@ -55,6 +56,7 @@ namespace MyGame.Hero
 			engineMain.simulationSpace = ParticleSystemSimulationSpace.World;
 			animator.SetTrigger(ROTATION_TRIGGER);
 			animator.enabled = false;
+			physicsBody.rotation = Quaternion.Euler(0, SHIP_ANGLE_Y, 0);
 		}
 		protected override void OnEndGameplay()
 		{
@@ -63,9 +65,8 @@ namespace MyGame.Hero
 		}
 		protected override void PlayingUpdate()
 		{
-			position += velocity * Time.fixedDeltaTime;
+			position += velocity * GTime.timeStep;
 
-			UpdatePositionOnField();
 			UpdateRotation();
 			UpdateMoveingSpeed();
 		}
@@ -77,16 +78,11 @@ namespace MyGame.Hero
 		}
 		protected override void OnChangeHealth(ref int valueToAdd)
 		{
-			if (mind.isShieldActive && valueToAdd < 0)
-			{
-				valueToAdd = (int)(valueToAdd * mind.shieldFactor);
-			}
-
 			if (isFull) healthBar.Fade(0, PlayerHealthBar.HP_BAR_FADE_DUR);
 		}
 
 		[SerializeField]
-		ParticleSystem m_engineParticles;
+		private ParticleSystem m_engineParticles;
 		private Vector3 m_smoothDir;
 		private bool m_isMoved = false;
 		private bool m_startEndAnimation = false;
@@ -95,7 +91,7 @@ namespace MyGame.Hero
 
 		private const float SHIP_ANGLE_Y = 180;
 
-		private const float CONTROLL_SPEED = 80;
+		private const float CONTROLL_SPEED = 40;
 		private const float CONTROLL_SMOOTHING = 15;
 		private const float CONTROLL_TILT = 1;
 		private const float CONTROLL_MAX_ANGLE = 60;
@@ -121,10 +117,10 @@ namespace MyGame.Hero
 		}
 		private void EndingAnimation()
 		{
-			float step = Time.fixedDeltaTime * ENDING_ANGLE_SPEED;
+			float step = GTime.timeStep * ENDING_ANGLE_SPEED;
 			float zAngle = Mathf.MoveTowards(physicsBody.rotation.z, 0, step);
 			physicsBody.rotation = Quaternion.Euler(0, SHIP_ANGLE_Y, zAngle);
-			position += new Vector3(0, 0, Time.fixedDeltaTime * ENDING_ESCAPE_SPEED);
+			position += new Vector3(0, 0, GTime.timeStep * ENDING_ESCAPE_SPEED);
 		}
 	}
 }

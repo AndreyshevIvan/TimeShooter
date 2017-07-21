@@ -10,7 +10,7 @@ namespace MyGame.Enemies
 	{
 		protected override void InitProperties()
 		{
-			health = maxHealth = 1;
+			health = maxHealth = m_health;
 			touchDemage = 20;
 			points = 40;
 			bonuses.Add(Pair<BonusType, int>.Create(BonusType.STAR, 3));
@@ -19,5 +19,12 @@ namespace MyGame.Enemies
 		{
 			roadController.Position = 10;
 		}
+		protected override void PlayingUpdate()
+		{
+			UpdateRoadSpeed();
+		}
+
+		[SerializeField]
+		private int m_health;
 	}
 }

@@ -2037,199 +2037,96 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2da27aff00407cb428786135e1448c49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_finalTime: 122
+  m_finalTime: 80
   m_groundObjects: {fileID: 4967626015242824}
   m_skyObjects: {fileID: 4304714994984520}
   m_ground: {fileID: 4496978326847128}
   m_skySpawns:
     array:
+    - road: 1
+      enemy: 2
+      time: 0
+      speed: 6
+      count: 3
     - road: 8
       enemy: 0
-      time: 1
+      time: 3
       speed: 8
       count: 6
     - road: 9
       enemy: 0
-      time: 4
+      time: 3
       speed: 8
       count: 6
     - road: 9
-      enemy: 0
-      time: 14
+      enemy: 1
+      time: 7
       speed: 7
       count: 8
     - road: 0
       enemy: 0
-      time: 20
+      time: 15
       speed: 10
       count: 10
     - road: 8
       enemy: 0
-      time: 25
+      time: 20
       speed: 8
       count: 8
     - road: 4
-      enemy: 1
-      time: 30
+      enemy: 2
+      time: 22
       speed: 4
-      count: 2
+      count: 4
     - road: 0
       enemy: 0
-      time: 45
+      time: 28
       speed: 10
       count: 8
     - road: 3
-      enemy: 1
-      time: 50
+      enemy: 2
+      time: 34
       speed: 5
       count: 2
     - road: 4
-      enemy: 1
-      time: 52
+      enemy: 2
+      time: 39
       speed: 4
       count: 2
     - road: 5
-      enemy: 0
-      time: 56
+      enemy: 1
+      time: 45
       speed: 10
       count: 6
     - road: 7
       enemy: 0
+      time: 52
+      speed: 10
+      count: 6
+    - road: 6
+      enemy: 1
       time: 60
       speed: 10
       count: 6
-    - road: 6
-      enemy: 0
-      time: 64
-      speed: 10
-      count: 6
     - road: 1
       enemy: 0
-      time: 70
+      time: 68
       speed: 8
       count: 10
     - road: 2
       enemy: 0
-      time: 73
+      time: 74
       speed: 8
       count: 10
     - road: 3
       enemy: 1
-      time: 76
+      time: 80
       speed: 4
-      count: 4
+      count: 8
     - road: 8
       enemy: 0
-      time: 86
+      time: 85
       speed: 10
       count: 10
-    - road: 9
-      enemy: 0
-      time: 90
-      speed: 10
-      count: 10
-    - road: 3
-      enemy: 1
-      time: 94
-      speed: 5
-      count: 3
-    - road: 4
-      enemy: 1
-      time: 94
-      speed: 5
-      count: 3
-    - road: 9
-      enemy: 0
-      time: 96
-      speed: 8
-      count: 9
-    - road: 8
-      enemy: 0
-      time: 96
-      speed: 8
-      count: 9
-    - road: 1
-      enemy: 0
-      time: 102
-      speed: 10
-      count: 8
-    - road: 2
-      enemy: 0
-      time: 106
-      speed: 10
-      count: 8
-    - road: 5
-      enemy: 0
-      time: 114
-      speed: 10
-      count: 7
-    - road: 6
-      enemy: 0
-      time: 117
-      speed: 10
-      count: 7
-    - road: 7
-      enemy: 0
-      time: 120
-      speed: 10
-      count: 7
   m_groundSpawns:
-    array:
-    - position: {x: 9, y: 0, z: 46}
-      enemy: 3
-    - position: {x: 5, y: 0, z: 56}
-      enemy: 3
-    - position: {x: 1, y: 0, z: 66}
-      enemy: 3
-    - position: {x: -6, y: -1, z: 77}
-      enemy: 3
-    - position: {x: 6, y: 0, z: 77}
-      enemy: 3
-    - position: {x: -6, y: -1, z: 84}
-      enemy: 3
-    - position: {x: 6, y: 0, z: 84}
-      enemy: 3
-    - position: {x: -6, y: 0, z: 105}
-      enemy: 4
-    - position: {x: 0, y: 0, z: 105}
-      enemy: 4
-    - position: {x: 6, y: 0, z: 105}
-      enemy: 4
-    - position: {x: -9, y: 0, z: 120}
-      enemy: 3
-    - position: {x: 9, y: 0, z: 128}
-      enemy: 3
-    - position: {x: -9, y: 0, z: 132}
-      enemy: 3
-    - position: {x: 9, y: 0, z: 136}
-      enemy: 3
-    - position: {x: -9, y: 0, z: 140}
-      enemy: 3
-    - position: {x: 9, y: 0, z: 144}
-      enemy: 3
-    - position: {x: -6, y: 0, z: 175}
-      enemy: 4
-    - position: {x: 6, y: 0, z: 175}
-      enemy: 4
-    - position: {x: -2, y: 0, z: 185}
-      enemy: 4
-    - position: {x: 2, y: 0, z: 185}
-      enemy: 4
-    - position: {x: -5, y: 0, z: 185}
-      enemy: 4
-    - position: {x: 5, y: 0, z: 185}
-      enemy: 4
-    - position: {x: 6, y: 0, z: 190}
-      enemy: 3
-    - position: {x: 6, y: 0, z: 190}
-      enemy: 3
-    - position: {x: 6, y: 0, z: 196}
-      enemy: 3
-    - position: {x: 6, y: 0, z: 196}
-      enemy: 3
-    - position: {x: -6, y: 0, z: 200}
-      enemy: 3
-    - position: {x: 0, y: 0, z: 200}
-      enemy: 4
-    - position: {x: 6, y: 0, z: 200}
-      enemy: 4
+    array: []

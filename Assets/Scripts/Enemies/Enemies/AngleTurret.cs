@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using GameUtils;
+using GameFactory;
 
 namespace MyGame.Enemies
 {
@@ -14,7 +15,7 @@ namespace MyGame.Enemies
 			health = maxHealth = 7;
 			coldown = 2.25f;
 			points = 120;
-			healthBar = world.factory.GetEnemyHealthBar();
+			healthBar = Factory.GetEnemyHealthBar();
 			bonuses.Add(Pair<BonusType, int>.Create(BonusType.STAR, 4));
 			isTimerWork = true;
 
@@ -42,6 +43,7 @@ namespace MyGame.Enemies
 
 			m_shootsTimer = 0;
 			m_shootsCount = 0;
+			playingUpd += ShootByGun;
 		}
 
 		[SerializeField]
@@ -56,16 +58,18 @@ namespace MyGame.Enemies
 
 		private void ShootByGun()
 		{
-			if (!Utils.UpdateTimer(ref m_shootsTimer, FIRE_PAUSE))
+			if (!Utils.UpdateTimer(ref m_shootsTimer, FIRE_PAUSE, true))
 			{
 				return;
 			}
 
-			Bullet bullet = factory.GetAmmo(AmmoType.ANGLE_TURRET) as Bullet;
+			Bullet bullet = Factory.GetAmmo(AmmoType.ANGLE_TURRET) as Bullet;
 			bullet.Shoot(m_bulletData, position);
 			bullet.MoveToGround();
 			m_shootsCount++;
 			m_shootsTimer = 0;
+
+			if (m_shootsCount == SHOOTS_COUNT) playingUpd -= ShootByGun;
 		}
 	}
 }

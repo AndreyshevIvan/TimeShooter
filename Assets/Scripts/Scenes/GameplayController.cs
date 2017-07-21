@@ -24,9 +24,9 @@ namespace MyGame
 		}
 		public GameWorld world { get { return m_world; } }
 		public Player player { get; private set; }
+		public float timeScale { get; private set; }
 
-		private Ship ship { get; set; }
-		private Map map { get; set; }
+		public const float ENDING_WAITING_TIME = 3;
 
 		[SerializeField]
 		private GameWorld m_world;
@@ -35,99 +35,78 @@ namespace MyGame
 		[SerializeField]
 		private ScenesController m_scenesController;
 		[SerializeField]
-		private Factories m_factory;
+		private Factory m_factory;
+		[SerializeField]
+		private Map m_map;
 
 		private ShipProperties m_shipProperties = new ShipProperties();
 		private GameplayState m_state;
 		private GameplayState m_prepauseState;
-		private float m_prePauseTimeScale;
 		private EventDelegate m_update;
+		private float m_prePauseTimeScale;
+
+		private Ship ship { get; set; }
 
 		private const float SHIP_PRE_START_SPEED = 4;
 		private const float SHIP_START_SPEED = 11;
-		public const float ENDING_WAITING_TIME = 3;
+		private const float SHIP_START_Z = -5;
 
 		private void Awake()
 		{
 			QualitySettings.vSyncCount = 0;
-			player = new Player(m_interface, ship);
+			GTime.Create();
 		}
 		private void Start()
 		{
 			m_world.Init(this);
+			Factory.Create(m_factory, m_world, m_interface);
 
-			InitFactory();
 			InitMap();
 			InitShip();
 			InitWorld();
 			InitInterface();
 
-			state = GameplayState.BEFORE_START;
-		}
-		private void InitFactory()
-		{
-			m_factory.world = m_world;
-			m_world.factory = m_factory;
+			player = new Player(m_interface, ship);
+			StartGame();
 		}
 		private void InitMap()
 		{
-			map = m_factory.GetMap(MapType.FIRST);
-			map.Init(this);
-			map.gameplay = this;
-			map.factory = m_factory;
+			m_map.Init(this);
 		}
 		private void InitShip()
 		{
-			ship = m_factory.GetShip(ShipType.STANDART);
+			ship = Factory.GetShip(ShipType.STANDART);
 			ship.properties = m_shipProperties;
-
-			ship.roadController.Spline = m_factory.GetRoad(RoadType.PLAYER_START);
-			ship.roadController.Clamping = CurvyClamping.Loop;
-			ship.roadController.PlayAutomatically = true;
-			ship.roadController.Speed = SHIP_PRE_START_SPEED;
+			ship.position = new Vector3(0, GameWorld.FLY_HEIGHT, SHIP_START_Z);
 		}
 		private void InitWorld()
 		{
-			m_world.map = map;
+			m_world.map = m_map;
 			m_world.ship = ship;
 		}
 		private void InitInterface()
 		{
 			m_interface.Init(this);
+			m_interface.joystickListener = Move;
 			m_interface.onPause += Pause;
-			m_interface.moveShip += MoveShip;
-			m_interface.onChangeMode += isTrue => m_world.SetSlowMode(isTrue);
-			m_interface.startTouchEvents += () =>
-			{
-				ship.roadController.Spline = null;
-				m_update += MoveShipToStart;
-			};
 		}
 
 		private void FixedUpdate()
 		{
 			if (m_update != null) m_update();
-			WaitEndOfGame();
-		}
-		private void WaitEndOfGame()
-		{
-			if (state == GameplayState.PLAYING &&
-				map.isReached &&
-				world.isAllEnemiesKilled &&
-				ship.isLive)
-			{
-				GameOver();
-			}
 		}
 
 		private void StartGame()
 		{
-			map.Play();
 			state = GameplayState.PLAYING;
-			Destroy(ship.roadController);
 		}
-		private void GameOver()
+		private void WinGameOver()
 		{
+			Debug.Log("Win!");
+		}
+		private void LoseGameOver()
+		{
+			Debug.Log("Lose!");
 		}
 		private void Pause(bool isPause)
 		{
@@ -143,16 +122,16 @@ namespace MyGame
 			state = m_prepauseState;
 		}
 
-		private void SaveUserData()
+		private void Move(Vector2 direction)
 		{
-		}
-		private void MoveShip(Vector3 targetPosition)
-		{
-			if (ship) ship.MoveTo(targetPosition);
+			float sqrSum = Mathf.Pow(direction.x, 2) + Mathf.Pow(direction.y, 2);
+			GTime.timeScale = Mathf.Sqrt(sqrSum);
+
+			ship.MoveBy(direction);
 		}
 		private void MoveShipToStart()
 		{
-			Vector3 target = new Vector3(0, GameWorld.FLY_HEIGHT, 0);
+			Vector3 target = new Vector3(0, GameWorld.FLY_HEIGHT, SHIP_START_Z);
 			float movement = SHIP_START_SPEED * Time.fixedDeltaTime;
 			ship.position = Vector3.MoveTowards(ship.position, target, movement);
 			if (ship.position == target)
@@ -165,11 +144,36 @@ namespace MyGame
 		{
 			m_world.GameplayChange(state);
 			m_interface.GameplayChange(state);
-			map.GameplayChange(state);
-			Debug.Log(state);
+			m_map.GameplayChange(state);
 		}
 	}
 
+	public class GTime
+	{
+		public static float timeScale
+		{
+			get { return m_timeScale; }
+			set { m_timeScale = Mathf.Clamp(value, 0, 1); }
+		}
+		public static float timeStep
+		{
+			get { return Time.fixedDeltaTime * timeScale; }
+		}
+
+		public static GTime Create()
+		{
+			if (m_instance != null) return m_instance;
+			return new GTime();
+		}
+
+		private static GTime m_instance;
+		private static float m_timeScale;
+
+		private GTime()
+		{
+			timeScale = 1;
+		}
+	}
 	public interface IGameplay
 	{
 		GameplayState state { get; }

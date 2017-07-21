@@ -46,6 +46,8 @@ namespace MyGame
 			base.Awake();
 			isEraseOnDeath = true;
 			isDemagamble = true;
+			playingUpd += UpdateBarPosition;
+			afterPlayingUpd += UpdateBarPosition;
 		}
 
 		protected void OnTriggerEnter(Collider other)
@@ -62,20 +64,15 @@ namespace MyGame
 		protected virtual void OnDeath() { }
 
 		private HealthBar m_healthBar;
-		private bool m_isDead = false;
+		private bool m_isDestroyed = false;
 
 		private void UpdateBarPosition()
 		{
-			if (!healthBar)
-			{
-				return;
-			}
-
-			healthBar.worldPosition = position;
+			if (healthBar) healthBar.worldPosition = position;
 		}
 		private void OnCollideWithBody(Body other)
 		{
-			if (!isDemagamble || m_isDead) return;
+			if (!isDemagamble || m_isDestroyed) return;
 
 			ChangeHealth(-1 * other.touchDemage);
 			other.OnDemageTaked();
@@ -85,7 +82,7 @@ namespace MyGame
 			{
 				OnDeath();
 				world.Remove(this);
-				m_isDead = true;
+				m_isDestroyed = true;
 				return;
 			}
 

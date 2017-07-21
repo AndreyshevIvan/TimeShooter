@@ -26,8 +26,6 @@ namespace MyGame
 
 		public int stars { get { return m_stars; } }
 		public int points { get { return m_points; } }
-		public float bombProcess { get { return m_ship.mind.bombProcess; } }
-		public float laserProcess { get { return m_ship.mind.shieldProcess; } }
 
 		public void AddPoints(int pointsCount)
 		{
@@ -37,34 +35,6 @@ namespace MyGame
 		public void AddStars(int count)
 		{
 			m_stars += count;
-		}
-		public void Modify()
-		{
-			if (!m_ship)
-			{
-				return;
-			}
-
-			m_ship.mind.ModificateByOne();
-			m_interface.modifications = m_ship.mind.modsCount;
-		}
-		public bool Shield()
-		{
-			if (!m_ship)
-			{
-				return false;
-			}
-
-			return m_ship.mind.Shield();
-		}
-		public bool Bomb()
-		{
-			if (!m_ship)
-			{
-				return false;
-			}
-
-			return m_ship.mind.Bomb();
 		}
 		public void Heal(int healthCount)
 		{
