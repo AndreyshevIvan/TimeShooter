@@ -16,16 +16,21 @@ namespace MyGame
 		public VirtualJoyStick joystick { get { return m_joystick; } }
 		public Transform barsParent { get { return m_barsParent; } }
 		public int points { set { m_points.SetValue(value); } }
+		public bool isJoystickWork
+		{
+			set { joystick.gameObject.SetActive(value); }
+		}
+		new public static Camera camera { get; private set; }
 
 		public void Pause(bool isPause)
 		{
 			if (onPause != null) onPause(isPause);
-			SetActive(m_pauseInterface, isPause);
 		}
 
 		protected override void OnPreStart()
 		{
 			CloseInterface();
+			isJoystickWork = true;
 
 			m_points.Fade(0, 0);
 		}
@@ -34,20 +39,26 @@ namespace MyGame
 			CloseInterface();
 			SetActive(m_pauseButton, true);
 			SetActive(m_points, true);
-			SetActive(m_joystick, true);
 			SetActive(m_progressSlider, true);
+			isJoystickWork = true;
 
 			m_points.Fade(1, BARS_FADING_DURATION);
 			Utils.FadeElement(m_progressSlider, 0, 0);
 			Utils.FadeElement(m_progressSlider, 1, BARS_FADING_DURATION);
 		}
+		protected override void OnPause()
+		{
+			CloseInterface();
+			SetActive(m_pauseInterface, true);
+			isJoystickWork = false;
+		}
 		protected override void OnEndGameplay()
 		{
 			CloseInterface();
 			SetActive(m_results, true);
+			isJoystickWork = false;
 
 			m_points.Fade(0, BARS_FADING_DURATION);
-			m_isJoystickWork = false;
 		}
 
 		protected override void PlayingUpdate()
@@ -67,18 +78,14 @@ namespace MyGame
 		private VirtualJoyStick m_joystick;
 		[SerializeField]
 		private Slider m_progressSlider;
-		private Image m_controllImg;
-		private Camera m_camera;
-		private bool m_isJoystickWork;
 
 		private const float PAUSE_BUTTON_SIZE_FACTOR = 0.07f;
 		private const float BARS_FADING_DURATION = 1.2f;
 
 		private void Awake()
 		{
-			m_camera = Camera.main;
+			camera = Camera.main;
 			Input.multiTouchEnabled = false;
-			m_controllImg = GetComponent<Image>();
 
 			InitUIElements();
 		}
@@ -95,7 +102,6 @@ namespace MyGame
 			SetActive(m_pauseButton, false);
 			SetActive(m_pauseInterface, false);
 			SetActive(m_points, false);
-			SetActive(m_joystick, false);
 			SetActive(m_progressSlider, false);
 		}
 	}

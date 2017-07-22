@@ -153,6 +153,10 @@ namespace GameUtils
 
 			return new Vector3(Mathf.Cos(rads), 0, Mathf.Sin(rads));
 		}
+		public static Vector3 Vec2ToVec3(Vector2 vec2)
+		{
+			return new Vector3(vec2.x, 0, vec2.y);
+		}
 
 		private static IEnumerator AfterTimeEvent(float time, EventDelegate afterTimeEvent)
 		{

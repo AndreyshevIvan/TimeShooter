@@ -82,11 +82,9 @@ namespace MyGame
 		}
 		private void InitHealth()
 		{
-			m_realization = () => world.player.Heal(HEAL_COUNT);
 		}
 		private void InitStar()
 		{
-			m_realization = () => world.player.AddStars(1);
 		}
 	}
 }

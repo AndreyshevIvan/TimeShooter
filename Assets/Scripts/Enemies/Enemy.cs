@@ -56,8 +56,6 @@ namespace MyGame.Enemies
 		}
 		protected sealed override void OnDeath()
 		{
-			world.player.KillEnemy(type);
-
 			if (Utils.IsHappen(HEALTH_PROBABLILITY))
 			{
 				bonuses.Add(BonusPair.Create(BonusType.HEALTH, 1));

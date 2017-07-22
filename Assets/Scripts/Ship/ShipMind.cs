@@ -24,7 +24,6 @@ namespace MyGame.Hero
 
 		protected override void OnInitEnd()
 		{
-			m_shield.gameObject.SetActive(false);
 		}
 		protected override void PlayingUpdate()
 		{
@@ -33,8 +32,6 @@ namespace MyGame.Hero
 
 		[SerializeField]
 		private Transform m_gunSpawn;
-		[SerializeField]
-		private GameObject m_shield;
 		[SerializeField]
 		private Transform m_leftRocketSpawn;
 		[SerializeField]

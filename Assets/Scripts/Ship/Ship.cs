@@ -20,13 +20,6 @@ namespace MyGame.Hero
 		}
 		public EventDelegate onDeath { get; set; }
 
-		public void RotateBy(float zRotationDirection)
-		{
-			zRotationDirection = Mathf.Clamp(zRotationDirection, -1, 1);
-			float zAngle = zRotationDirection * MAX_ROTATE_ANGLE;
-			m_targetRotation = Quaternion.Euler(0, SHIP_ANGLE_Y, zAngle);
-		}
-
 		protected override void OnAwakeEnd()
 		{
 			mind = GetComponent<ShipMind>();
@@ -39,35 +32,40 @@ namespace MyGame.Hero
 			isEraseOnDeath = false;
 			distmantleAllowed = true;
 		}
-		protected override void OnPlaying()
-		{
-			physicsBody.rotation = Quaternion.Euler(0, SHIP_ANGLE_Y, 0);
-		}
 		protected override void OnEndGameplay()
 		{
 			gameObject.layer = (int)Layer.UNTOUCH;
 			if (healthBar) healthBar.Close();
 		}
+
+		protected override void BeforePlayingUpdate()
+		{
+			UpdateRotation();
+		}
 		protected override void PlayingUpdate()
 		{
-			Quaternion current = physicsBody.rotation;
-			float rotateSpeed = GTime.timeStep * ROTATE_SPEED;
-			physicsBody.rotation = Quaternion.Lerp(current, m_targetRotation, rotateSpeed);
+			UpdateRotation();
+		}
+
+		protected override void OnChangeHealth(ref int valueToAdd)
+		{
+			if (isFull) healthBar.Fade(0, PlayerHealthBar.HP_BAR_FADE_DUR);
 		}
 		protected override void DoAfterDemaged()
 		{
 			healthBar.Fade(1, PlayerHealthBar.HP_BAR_FADE_DUR);
 			if (!isLive && onDeath != null) onDeath();
 		}
-		protected override void OnChangeHealth(ref int valueToAdd)
-		{
-			if (isFull) healthBar.Fade(0, PlayerHealthBar.HP_BAR_FADE_DUR);
-		}
 
-		private Quaternion m_targetRotation;
-
-		private const float SHIP_ANGLE_Y = 180;
 		private const float ROTATE_SPEED = 2;
 		private const float MAX_ROTATE_ANGLE = 60;
+
+		private void UpdateRotation()
+		{
+			float rotateSpeed = GTime.timeStep * ROTATE_SPEED;
+			float zAngle = gameplay.direction.x * MAX_ROTATE_ANGLE;
+			Quaternion targetRotation = Quaternion.Euler(0, 0, -zAngle);
+			rotation = Quaternion.Lerp(rotation, targetRotation, rotateSpeed);
+		}
 	}
 }

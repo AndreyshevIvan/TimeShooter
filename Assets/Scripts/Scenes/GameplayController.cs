@@ -19,19 +19,29 @@ namespace MyGame
 			get { return m_state; }
 			private set
 			{
-				m_state = value;
-				NotifyObjects();
+				if (m_state != value)
+				{
+					m_state = value;
+					NotifyObjects();
+				}
 			}
 		}
 		public World world { get { return m_world; } }
-		public Player player { get; private set; }
+		public Vector2 direction
+		{
+			get { return m_direction; }
+			set
+			{
+				m_direction = value;
+				float sqrSum = Mathf.Pow(value.x, 2) + Mathf.Pow(value.y, 2);
+				GTime.timeScale = Mathf.Sqrt(sqrSum);
+			}
+		}
 		public float clearProgress
 		{
-			get { return m_clearProgress; }
-			private set { m_clearProgress = Mathf.Clamp01(value); }
+			get { return m_clearPart; }
+			private set { m_clearPart = Mathf.Clamp01(value); }
 		}
-
-		public const float PLAYER_DEPTH = -6;
 
 		[SerializeField]
 		private World m_world;
@@ -47,63 +57,53 @@ namespace MyGame
 		private GameplayState m_state;
 		private GameplayState m_prepauseState;
 		private Vector2 m_direction;
-		private float m_clearProgress = 0;
-
-		private Vector2 direction
-		{
-			get { return m_direction; }
-			set
-			{
-				m_direction = value;
-				float sqrSum = Mathf.Pow(value.x, 2) + Mathf.Pow(value.y, 2);
-				GTime.timeScale = Mathf.Sqrt(sqrSum);
-			}
-		}
-
-		private const float CLEAR_DURATION = 10;
-		private const float LEAVE_DURATION = 4;
+		private float m_clearPosition = WorldConst.CLEAR_MAX_OFFSET;
+		private float m_clearPart = 0;
 
 		private void Awake()
 		{
 			QualitySettings.vSyncCount = 0;
 			GTime.Create();
+			Factory.Create(m_factory, m_world, m_interface);
+
+			state = GameplayState.INITIALIZATION;
+			clearProgress = 0;
 		}
 		private void Start()
 		{
-			m_world.Init(this);
-			Factory.Create(m_factory, m_world, m_interface);
-
 			InitShip();
 			InitWorld();
 			InitInterface();
 
-			player = new Player(m_interface, m_ship);
-			StartGame();
+			state = GameplayState.BEFORE_PLAYING;
 			StopMove();
 		}
 		private void InitShip()
 		{
 			m_ship = Factory.GetShip(ShipType.STANDART);
 			m_ship.properties = m_shipProperties;
-			m_ship.position = new Vector3(0, 0, PLAYER_DEPTH);
+			m_ship.position = WorldConst.ZERO_POINT;
 			m_ship.onDeath += EndGame;
 		}
 		private void InitWorld()
 		{
+			m_world.Init(this);
 			m_world.ship = m_ship;
+			m_world.onStart = StartGame;
 		}
 		private void InitInterface()
 		{
 			m_interface.Init(this);
-			m_interface.joystick.joystickListener = UpdateMove;
-			m_interface.joystick.joystickCloseEvent = StopMove;
 			m_interface.onPause += Pause;
+			m_interface.joystick.joystickCloseEvent = StopMove;
+			m_interface.joystick.joystickListener = delegate (Vector2 newDirection) {
+				this.direction = newDirection;
+			};
 		}
 
 		private void StartGame()
 		{
 			state = GameplayState.PLAYING;
-			clearProgress = 0;
 		}
 		private void Pause(bool isPause)
 		{
@@ -111,6 +111,7 @@ namespace MyGame
 			{
 				Time.timeScale = 0;
 				m_prepauseState = state;
+				state = GameplayState.PAUSE;
 				return;
 			}
 
@@ -133,25 +134,20 @@ namespace MyGame
 				return;
 			}
 
-			float duration = clearProgress * CLEAR_DURATION + Time.fixedDeltaTime;
-			duration += -direction.y * Time.fixedDeltaTime * LEAVE_DURATION;
-			clearProgress = duration / CLEAR_DURATION;
+			m_clearPosition += WorldConst.CLEAR_SPEED * Time.fixedDeltaTime;
+			m_clearPosition += m_world.offset.y;
+			clearProgress = m_clearPosition / WorldConst.CLEAR_MAX_OFFSET;
 			if (clearProgress >= 1) EndGame();
 		}
 
-		private void UpdateMove(Vector2 direction)
-		{
-			this.direction = direction;
-			m_ship.RotateBy(direction.x);
-		}
 		private void StopMove()
 		{
 			direction = Vector2.zero;
 		}
 		private void NotifyObjects()
 		{
-			m_world.GameplayChange(state);
-			m_interface.GameplayChange(state);
+			if (m_world) m_world.GameplayChange(state);
+			if (m_interface) m_interface.GameplayChange(state);
 		}
 	}
 
@@ -185,7 +181,7 @@ namespace MyGame
 	{
 		GameplayState state { get; }
 		World world { get; }
-		Player player { get; }
+		Vector2 direction { get; }
 		float clearProgress { get; }
 	}
 }

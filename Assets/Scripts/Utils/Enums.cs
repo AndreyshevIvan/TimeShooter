@@ -106,6 +106,7 @@ namespace MyGame
 	[System.Serializable]
 	public enum GameplayState
 	{
+		INITIALIZATION,
 		BEFORE_PLAYING,
 		PLAYING,
 		PAUSE,

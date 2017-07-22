@@ -68,7 +68,9 @@ namespace MyGame
 			}
 
 			if (m_currentEvent != null) m_currentEvent();
+			StableUpdate();
 		}
+		protected virtual void StableUpdate() { }
 
 		protected virtual void OnChangeGameplay(GameplayState newState) { }
 		protected virtual void OnPreStart() { }
